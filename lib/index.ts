@@ -1,10 +1,4 @@
-import type {
-  Msg,
-  VerifyMsg,
-  MsgHanlder,
-  CloseMsgHandler,
-  ClassMethodDecorator
-} from './types';
+import type { Msg, VerifyMsg, MsgHanlder, CloseMsgHandler, ClassMethodDecorator } from './types';
 import { nanoid } from 'nanoid';
 
 const messageEventHandlerMap = new Map<string, Set<MsgHanlder>>();
@@ -38,8 +32,8 @@ class PopupWindow {
   public url: string;
   public closed: boolean;
 
-  constructor(url: string | URL, target?: string, features?: string) {
-    const _window = currentWindow.open(url, target, features);
+  constructor(url: string | URL, features?: string) {
+    const _window = currentWindow.open(url, '_blank', features);
     if (_window === null) {
       throw new Error('can not open window');
     }
@@ -52,8 +46,8 @@ class PopupWindow {
     this.url = url instanceof URL ? url.toString() : url;
     this.closed = false;
     messageEventHandlerMap.set(this._window._verify, this._msgHandlerSet);
-    this._window.addEventListener('unload', () => {
-      if (this._window.location.href.includes(this.url)) {
+    this._window.addEventListener('DOMContentLoaded', () => {
+      this._window.addEventListener('unload', () => {
         this.closed = true;
         for (const handler of this._closeHandlerSet) {
           if (this._window._isClose) {
@@ -62,7 +56,7 @@ class PopupWindow {
             handler({ type: 'closed', error: new Error('closed by user') });
           }
         }
-      }
+      });
     });
   }
   private _postMsg() {
@@ -79,6 +73,12 @@ class PopupWindow {
       }, 100);
     }
   }
+  /**
+   * Sends a message to the specified target window.
+   *
+   * @param {Msg} msg - The message to be sent.
+   * @param {string} targetOrigin - The target origin for the message. Defaults to '*'.
+   */
   sendMsg(msg: Msg, targetOrigin = '*') {
     const verifyMsg = {
       verify: this._window._verify,
@@ -89,24 +89,60 @@ class PopupWindow {
     this._postMsg();
   }
 
+  /**
+   * Close the opened window
+   */
   close() {
     this._window._isClose = true;
     this._window.close();
   }
+  /**
+   * Add a message event handler.
+   *
+   * @param {MsgHanlder} handler - the message handler to add
+   * @return {void}
+   */
   addMessageEventHandler(handler: MsgHanlder) {
     this._msgHandlerSet.add(handler);
   }
+  /**
+   * Remove a message event handler.
+   *
+   * @param {MsgHanlder} handler - the handler to be removed
+   * @return {void}
+   */
   removeMessageEventHandler(handler: MsgHanlder) {
     this._msgHandlerSet.delete(handler);
   }
+  /**
+   * Add a close event handler.
+   *
+   * @param {CloseMsgHandler} handler - the handler to add
+   * @return {void}
+   */
   addCloseEventHandler(handler: CloseMsgHandler) {
     this._closeHandlerSet.add(handler);
   }
+
+  /**
+   * Removes a close event handler.
+   *
+   * @param {CloseMsgHandler} handler - The close event handler to be removed
+   * @return {void}
+   */
   removeCloseEventHandler(handler: CloseMsgHandler) {
     this._closeHandlerSet.delete(handler);
   }
 }
 
+/**
+ * Decorator for checking the opener window before executing the decorated method.
+ *
+ * @param {any} _target - the target of the decorator
+ * @param {string | symbol} _propertyKey - the key of the property
+ * @param {PropertyDescriptor} descriptor - the property descriptor
+ * @return {void}
+ */
 const checkOpnerWindow: ClassMethodDecorator = (_target, _propertyKey, descriptor) => {
   const sourceMethod = descriptor.value;
   descriptor.value = function (...args: any[]) {
@@ -115,7 +151,19 @@ const checkOpnerWindow: ClassMethodDecorator = (_target, _propertyKey, descripto
   };
 };
 
+/**
+ * @class
+ * @classdesc The OpenerWindow class represents the window that opened the current window.
+ * @name OpenerWindow
+ * @example
+ * OpenerWindow.sendMsg({ type: 'hello', value: 'hello sendMsgToOpener' });
+ */
 class OpenerWindow {
+  /**
+   * Adds a message event handler to the set of handlers for the specified opener window.
+   *
+   * @param {MsgHanlder} handler - The message event handler to be added.
+   */
   @checkOpnerWindow
   static addMessageEventHandler(handler: MsgHanlder) {
     let msgHandlerSet = messageEventHandlerMap.get(openerWindow._verify);
@@ -125,6 +173,12 @@ class OpenerWindow {
     }
     msgHandlerSet.add(handler);
   }
+  /**
+   * Remove a message event handler from the message handler set.
+   *
+   * @param {MsgHanlder} handler - The message handler to be removed.
+   * @return {void}
+   */
   @checkOpnerWindow
   static removeMessageEventHandler(handler: MsgHanlder) {
     const msgHandlerSet = messageEventHandlerMap.get(openerWindow._verify);
@@ -132,6 +186,13 @@ class OpenerWindow {
       msgHandlerSet.delete(handler);
     }
   }
+  /**
+   * Send a message to the specified target origin.
+   *
+   * @param {Msg} msg - the message to be sent
+   * @param {string} [targetOrigin='*'] - the target origin for the message
+   * @return {void}
+   */
   @checkOpnerWindow
   static sendMsg(msg: Msg, targetOrigin = '*') {
     openerWindow.postMessage(
@@ -144,6 +205,9 @@ class OpenerWindow {
     );
   }
 
+  /**
+   * Close the function of the current window
+   */
   @checkOpnerWindow
   static closePopup() {
     currentWindow._isClose = true;
@@ -151,10 +215,17 @@ class OpenerWindow {
   }
 }
 
-const openWindow = (url: string | URL, target?: string, features?: string) => {
+/**
+ * Creates a new popup window with the provided URL, target, and features.
+ *
+ * @param {string | URL} url - The URL to be opened in the popup window.
+ * @param {string} [features] - The features of the popup window.
+ * @return {Promise<PopupWindow>} A Promise that resolves to the created PopupWindow or rejects with an error.
+ */
+const openWindow = (url: string | URL, features?: string) => {
   return new Promise<PopupWindow>((resolve, reject) => {
     try {
-      const popupWindow = new PopupWindow(url, target, features);
+      const popupWindow = new PopupWindow(url, features);
       resolve(popupWindow);
     } catch (error) {
       reject(error);

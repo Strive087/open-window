@@ -2,6 +2,21 @@
   "name": "open-window",
   "version": "0.0.0",
   "type": "module",
+  "description": "A library for easy inter-window communication encapsulated in Window:open() mehtod",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Strive087/open-window.git"
+  },
+  "license": "MIT",
+  "keywords": [
+    "open",
+    "window",
+    "window open",
+    "open window",
+    "popup",
+    "opener",
+    "blank"
+  ],
   "files": [
     "dist"
   ],
