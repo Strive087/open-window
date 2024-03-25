@@ -1,6 +1,6 @@
 {
   "name": "open-window",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "description": "A library for easy inter-window communication encapsulated in Window:open() mehtod",
   "repository": {
