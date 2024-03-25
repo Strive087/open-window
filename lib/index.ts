@@ -67,7 +67,7 @@ class PopupWindow {
       });
       this._msgStack = [];
     } else {
-      this._timer = setTimeout(() => {
+      this._timer = window.setTimeout(() => {
         this._timer = null;
         this._postMsg();
       }, 100);

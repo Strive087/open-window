@@ -5,8 +5,9 @@ export default defineConfig({
   build: {
     lib: {
       entry: './lib/index.ts',
-      name: 'Lib',
-      fileName: 'lib'
+      name: 'OpenWindow',
+      fileName: 'lib',
+      formats: ['es', 'iife', 'umd'],
     }
   },
   plugins: [dts({ entryRoot: './lib', rollupTypes: true })]

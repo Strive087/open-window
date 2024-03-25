@@ -15,6 +15,23 @@ npm i open-window --save
 
 <img src="./assets/demo.gif" alt="demo">
 
+## Import
+
+### ES5 Imports
+
+```js
+import { openWindow, OpenerWindow } from 'open-window';
+```
+
+### Browserify
+
+```html
+<!--publishes one browserified bundles inside the dist/ folder: -->
+<script src="lib.iife.js"></script> 
+<!-- or -->
+<script src="https://cdn.jsdelivr.net/npm/open-window/dist/lib.iife.js"></script> 
+```
+
 ## Usage
 
 In `opener.html`
