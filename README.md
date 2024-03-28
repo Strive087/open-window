@@ -1,5 +1,10 @@
 <h1 align="center">open-window</h1>
 
+<img alt="NPM Version" src="https://img.shields.io/npm/v/open-window">
+<img alt="NPM License" src="https://img.shields.io/npm/l/open-window">
+<img alt="NPM Unpacked Size" src="https://img.shields.io/npm/unpacked-size/open-window">
+
+
 <p align="center">
   A library for easy inter-window communication encapsulated in <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/open">Window:open() mehtod</a>.
 </p>
